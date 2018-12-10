@@ -1,0 +1,20 @@
+{
+  "name": "facepunch-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "nickjs": "^0.3.6",
+    "phantom": "^6.0.3",
+    "phantom-pool": "^1.2.2",
+    "request": "^2.88.0",
+    "restify": "^7.2.1",
+    "striptags": "^3.1.1"
+  }
+}
