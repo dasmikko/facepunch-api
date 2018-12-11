@@ -1,18 +1,6 @@
 var restify = require("restify");
 const cheerio = require("cheerio");
-var request = require("request");
-var striptags = require("striptags");
-const phantom = require("phantom");
-var _ph, _page, _outObj;
 const createPhantomPool = require("phantom-pool");
-
-process.env.CHROME_PATH =
-  "C:\\Program Files (x86)\\Google\\Chrome\\Application\\Chrome.exe";
-
-const Nick = require("nickjs");
-const nick = new Nick({
-  resourceTimeout: 100000
-});
 
 console.log("Creating PhantomJS pool...");
 
@@ -31,6 +19,7 @@ const pool = createPhantomPool({
   phantomArgs: [["--ignore-ssl-errors=true", "--disk-cache=true"], {}] // arguments passed to phantomjs-node directly, default is `[]`. For all opts, see https://github.com/amir20/phantomjs-node#phantom-object-api
 });
 
+// Used for watinng JS load
 async function waitFor($config) {
   $config._start = $config._start || new Date();
 
@@ -94,22 +83,11 @@ async function phantontest(req, res, next) {
   let subforums = [];
 
   $(".forumblock").each(function(index, element) {
-    let id = $(this)
-      .find(".bglink")
-      .attr("href")
-      .substr(1);
-    let viewers = $(this)
-      .find(".forumtitle span")
-      .text();
-    $(this)
-      .find(".forumtitle span")
-      .remove(); // This is needed to get the title correctly.
-    let title = $(this)
-      .find(".forumtitle")
-      .text();
-    let icon = $(this)
-      .find("img")
-      .attr("src");
+    let id = $(this).find(".bglink").attr("href").substr(1);
+    let viewers = $(this).find(".forumtitle span").text();
+    $(this).find(".forumtitle span").remove(); // This is needed to get the title correctly.
+    let title = $(this).find(".forumtitle").text();
+    let icon = $(this).find("img").attr("src");
 
     let subtitle = $(this)
       .find(".forumsubtitle")
@@ -216,9 +194,10 @@ async function forums(req, res, next) {
       .trim();
 
     let items = [];
-    let subforums = [];
 
     $(".forumblock").each(function(index, element) {
+      let subforums = [];
+
       let id = $(this)
         .find(".bglink")
         .attr("href")
@@ -284,13 +263,13 @@ async function forums(req, res, next) {
         .trim();
 
       // Loop subforums
-      $(this)
-        .find(".subforum")
+      $(element)
+        .find(".forumsubforums>.subforum")
         .each(function(index, subforum) {
-          let subforumTitle = $(this)
+          let subforumTitle = $(subforum)
             .find("a")
             .text();
-          let subforumId = $(this)
+          let subforumId = $(subforum)
             .find("a")
             .attr("href")
             .substr(3);
@@ -337,7 +316,6 @@ async function forum(req, res, next) {
     "https://forum.facepunch.com/f/" + req.params.forumid
   );
 
-  console.log(content);
   var $ = cheerio.load(content);
 
   let threads = [];
@@ -387,25 +365,12 @@ async function forum(req, res, next) {
         .trim()
     );
 
-    $(this)
-      .find(".viewedcount>div>.label")
-      .remove(); // remove the label
+    $(this).find(".viewedcount>div>.label").remove(); // remove the label
     let viewedcount = parseInt(
-      $(this)
-        .find(".viewedcount")
-        .attr("title")
-        .replace(" members viewed this thread", "")
-    );
+      $(this).find(".viewedcount").attr("title").replace(" members viewed this thread", ""));
 
-    $(this)
-      .find(".postcount>div>.label")
-      .remove(); // remove the label
-    let postcount = parseInt(
-      $(this)
-        .find(".postcount>div")
-        .text()
-        .trim()
-    );
+    $(this).find(".postcount>div>.label").remove(); // remove the label
+    let postcount = parseInt($(this).find(".postcount>div").text().trim());
 
     let threadlastpost = $(this).find(".threadlastpost");
     let threadlastpostUsername = $(threadlastpost)
@@ -437,16 +402,7 @@ async function forum(req, res, next) {
 
 async function thread(req, res, next) {
   console.log('Fetching thread')
-  let content = await phantomCall(
-    "https://forum.facepunch.com/f/" +
-      req.params.forumid +
-      "/" +
-      req.params.threadid1 +
-      "/" +
-      req.params.threadid2 +
-      "/" +
-      req.params.pagenumber
-  );
+  let content = await phantomCall("https://forum.facepunch.com/f/" + req.params.forumid + "/" + req.params.threadid1 + "/" + req.params.threadid2 + "/" + req.params.pagenumber);
 
   var $ = cheerio.load(content);
 
@@ -457,11 +413,14 @@ async function thread(req, res, next) {
   let threadName = $(".threadname")
     .text()
     .trim();
-  let currentPage = req.params.pagenumber;
+  let currentPage = parseInt(req.params.pagenumber);
 
   $(".postblock").each((index, element) => {
     // Get username
     let postUsername = $(element).find(".username>.inner>a").text().trim()
+    let postUserLevel = parseInt($(element).find('.postuser .inner>.userlevel').text().trim())
+    let postUserUrl = $(element).find(".username>.inner>a").attr('href')
+    let postUserAvatar = $(element).find('.postavatar>img').attr('src')
 
     // Get background image (if any)
     let backgroundImage = null;
@@ -469,12 +428,85 @@ async function thread(req, res, next) {
       backgroundImage = bgimgRegex.exec($(element).find(".background-image").attr("style"))[0]
     }
 
+    let postContent = []
+
+    $(element).find('.ql-editor').children().each((index, contentElement) => {
+      let el = $(contentElement)
+
+      // Check what root element it is
+      switch (contentElement.name) {
+        case 'p':
+          // Check if it contains any children
+          // And see if it's a link or br tag
+          if (el.children()[0]) {
+            switch (el.children()[0].name) {
+              case 'a':
+                postContent.push({
+                  type: 'link',
+                  url: $(el.children()[0]).attr('href'),
+                  content: $(el.children()[0]).text()
+                })
+                break;
+              case 'br':
+                postContent.push({
+                  type: 'newline',
+                })
+                break;
+            }
+          } else {
+            postContent.push({
+              type: 'text',
+              content: el.text()
+            })
+          }
+          break;
+        case 'postquote':
+          postContent.push({
+            type: 'postquote',
+            username: $(contentElement).attr('username'),
+            url: $(contentElement).find('a').attr('href'),
+            content: $(contentElement).find('.body').text()
+          })
+          break;
+        case 'hotlink':
+          let hotlinkType = null
+
+          if ($(contentElement).find('iframe').length > 0) hotlinkType = 'iframe'
+          if ($(contentElement).find('.ec_youtube_root').length > 0) hotlinkType = 'youtube'
+          if ($(contentElement).find('video').length > 0) hotlinkType = 'video'
+          if ($(contentElement).find('.ec_image_root').length > 0) hotlinkType = 'image'
+
+          // A small "Hack" for twitch and twitter embeds...
+          // For some stupid reason, then just checking for iframe,
+          // it will not find it.
+          if($(contentElement).attr('url').includes('clips.twitch.tv')) hotlinkType = 'twitch-embed'
+          if($(contentElement).attr('url').includes('twitter.com')) hotlinkType = 'twitter-embed'
+
+          postContent.push({
+            type: 'hotlink',
+            hotlinkType: hotlinkType,
+            url: $(contentElement).attr('url'),
+          })
+          break;
+        default:
+          postContent.push({
+            type: 'text',
+            content: $(contentElement).text()
+          })
+          break;
+      }
+    })
+
     // Push the post to the list
     posts.push({
       user: {
         username: postUsername,
+        userLevel: postUserLevel,
+        url: postUserUrl,
+        avatar: postUserAvatar ? postUserAvatar : null,
         backgroundImage: backgroundImage
-      }
+      },
+      content: postContent
     });
   });
 
