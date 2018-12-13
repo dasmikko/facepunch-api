@@ -14,6 +14,7 @@ Now, I'm just making the post parsing work, as they are in the Quill delta forma
 - Category page
 - Single Forum
 - Threads
+- Manifest (Emotes, threadicons, rating icons)
 
 It still needs a bit of work, but it's a great POC that FP can be scraped for API use.
 
