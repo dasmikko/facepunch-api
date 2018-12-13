@@ -1,6 +1,8 @@
 var restify = require("restify");
 const cheerio = require("cheerio");
 const axios = require("axios");
+const nodeEval = require('node-eval');
+
 
 
 // Used for watinng JS load
@@ -67,11 +69,20 @@ function parseOps(opsObject) {
       // hotlinks, postquotes etc, should be it's own seperate object
 
       if (objContent.hasOwnProperty('hotlink')) {
+        let contentType = null
+
+        if (objContent.hotlink.url.includes('youtube.com') || objContent.hotlink.url.includes('youtu.be')) contentType = 'youtube'
+        if (objContent.hotlink.url.includes('twitter.com')) contentType = 'twitter'
+        if (objContent.hotlink.url.includes('clips.twitch.tv')) contentType = 'twitch'
+        if (objContent.hotlink.url.includes('facebook.com')) contentType = 'facebook'
+        if (objContent.hotlink.url.includes('vimeo.com')) contentType = 'facebook'
+
         parsedOps.push({
           type: 'hotlink',
           url: objContent.hotlink.url,
           force: objContent.hotlink.force,
-          thumb: objContent.hotlink.thumb
+          thumb: objContent.hotlink.thumb,
+          contentType: contentType
         })
       } else if (objContent.hasOwnProperty('postquote')) {
         let postquote = objContent.postquote
@@ -296,6 +307,8 @@ async function forum(req, res, next) {
       .find("img")
       .attr("src");
 
+    let isSticky = $(this).hasClass('is-sticky')
+
     let threadsubforum = $(this)
       .find(".threadsubforum")
       .attr("title"); //
@@ -359,8 +372,9 @@ async function forum(req, res, next) {
       url: url,
       title: title,
       icon: icon,
+      isSticky: isSticky,
       threadsubforum: threadsubforum,
-      threadage: threadage,
+      threadagedays: threadage,
       viewedcount: viewedcount,
       postcount: postcount,
       creator: {
@@ -377,7 +391,7 @@ async function forum(req, res, next) {
   next();
 }
 
-async function thread(req, res, next) {
+async function thread (req, res, next) {
   console.log("Fetching thread");
   let content = await axios.get(
     "https://forum.facepunch.com/f/" +
@@ -417,7 +431,6 @@ async function thread(req, res, next) {
     let postContent = JSON.parse($(post).attr("input"));
     let parsedContent = parseOps(postContent.ops);
 
-    console.log(parsedContent)
 
     $(post)
       .find(".ql-editor")
@@ -531,7 +544,23 @@ async function thread(req, res, next) {
   next();
 }
 
+async function manifest(req, res, next) {
+  let content = await axios.get("https://forum.facepunch.com/manifest")
+  let contentRaw = content.data.trim()
+
+  let window = {};
+  nodeEval(contentRaw, '', {window})
+  res.send(window)
+  next()
+}
+
 var server = restify.createServer();
+
+// Manifest
+// Single forum
+server.get("/manifest", manifest);
+server.head("/manifest", manifest);
+
 // Home
 server.get("/", forums);
 server.head("/", forums);
@@ -541,8 +570,8 @@ server.get("/f/", forums);
 server.head("/f/", forums);
 
 // Single forum
-server.get("/f/:forumid", forum);
-server.head("/f/:forumid", forum);
+server.get("/:forumid", forum);
+server.head("/:forumid", forum);
 
 // Thread
 // https://forum.facepunch.com/general/bunmb/Inside-a-Flat-Earth-Conference/1/
