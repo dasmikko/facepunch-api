@@ -19,7 +19,7 @@ Now, I'm just making the post parsing work, as they are in the Quill delta forma
 It still needs a bit of work, but it's a great POC that FP can be scraped for API use.
 
 ## What is missing?
-- [ ] Post ratings
+- [x] Post ratings
 - [ ] Authentication
 - [ ] Thread making
 - [ ] Posting
