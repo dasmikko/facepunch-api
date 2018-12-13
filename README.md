@@ -28,6 +28,13 @@ It still needs a bit of work, but it's a great POC that FP can be scraped for AP
 - [ ] User notifications
 - [ ] Settings page
 - [ ] API documentation
+- [ ] Configuration file for port etc...
+
+## How to use
+- Clone
+- run `npm install`
+- run `node index`
+- API is now running.
 
 ## Helping
 Feel free to help on the project! 
