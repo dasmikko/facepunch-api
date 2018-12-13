@@ -509,7 +509,7 @@ server.head("/:forumid/:threadid1/:threadid2/:pagenumber", thread);
 server.get("/:forumid/:threadid1/:threadid2/:pagenumber/", thread);
 server.head("/:forumid/:threadid1/:threadid2/:pagenumber/", thread);
 
-server.listen(8080, function() {
+server.listen(80, function() {
   console.log("NewPunch API started...");
   console.log("%s listening at %s", server.name, server.url);
 });
