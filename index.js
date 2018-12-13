@@ -451,7 +451,7 @@ async function thread (req, res, next) {
         url: postUserUrl,
         avatar: postUserAvatar ? postUserAvatar : null,
         backgroundImage: backgroundImage,
-        isGold: 
+        userRank: postUserRank
       },
       content: postContent,
       contentParsed: parsedContent,
