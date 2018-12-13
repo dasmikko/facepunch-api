@@ -418,10 +418,16 @@ async function thread (req, res, next) {
 
   $("postrender").each((index, post) => {
     // Get username
-    let postUsername = $(post).attr("username");
-    let postUserLevel = parseInt($(post).attr("level"));
-    let postUserUrl = $(post).attr("userurl");
-    let postUserAvatar = $(post).attr("avatar");
+    let postUsername = $(post).attr("username")
+    let postUserLevel = parseInt($(post).attr("level"))
+    let postUserUrl = $(post).attr("userurl")
+    let postUserAvatar = $(post).attr("avatar")
+    let postUserCountry = $(post).attr("country")
+
+    let postUserRank = 'normal'
+    if ($(post).attr("userclass").includes('user-gold')) postUserRank = 'gold'
+    if ($(post).attr("userclass").includes('user-moderator')) postUserRank = 'moderator'
+    if ($(post).attr("userclass").includes('user-admin')) postUserRank = 'admin'
 
     // Get background image (if any)
     let backgroundImage = null;
@@ -431,106 +437,28 @@ async function thread (req, res, next) {
     let postContent = JSON.parse($(post).attr("input"));
     let parsedContent = parseOps(postContent.ops);
 
+    let postMeta = JSON.parse($(post).attr('meta'))
+    let postCanReply = JSON.parse($(post).attr('canreply'))
+    let postCanVote = JSON.parse($(post).attr('canvote'))
 
-    $(post)
-      .find(".ql-editor")
-      .children()
-      .each((index, contentElement) => {
-        let el = $(contentElement);
-
-        // Check what root element it is
-        switch (contentElement.name) {
-          case "p":
-            // Check if it contains any children
-            // And see if it's a link or br tag
-            if (el.children()[0]) {
-              switch (el.children()[0].name) {
-                case "a":
-                  postContent.push({
-                    type: "link",
-                    url: $(el.children()[0]).attr("href"),
-                    content: $(el.children()[0]).text()
-                  });
-                  break;
-                case "br":
-                  postContent.push({
-                    type: "newline"
-                  });
-                  break;
-              }
-            } else {
-              postContent.push({
-                type: "text",
-                content: el.text()
-              });
-            }
-            break;
-          case "postquote":
-            postContent.push({
-              type: "postquote",
-              username: $(contentElement).attr("username"),
-              url: $(contentElement)
-                .find("a")
-                .attr("href"),
-              content: $(contentElement)
-                .find(".body")
-                .text()
-            });
-            break;
-          case "hotlink":
-            let hotlinkType = null;
-
-            if ($(contentElement).find("iframe").length > 0)
-              hotlinkType = "iframe";
-            if ($(contentElement).find(".ec_youtube_root").length > 0)
-              hotlinkType = "youtube";
-            if ($(contentElement).find("video").length > 0)
-              hotlinkType = "video";
-            if ($(contentElement).find(".ec_image_root").length > 0)
-              hotlinkType = "image";
-
-            // A small "Hack" for twitch and twitter embeds...
-            // For some stupid reason, then just checking for iframe,
-            // it will not find it.
-            if (
-              $(contentElement)
-                .attr("url")
-                .includes("clips.twitch.tv")
-            )
-              hotlinkType = "twitch-embed";
-            if (
-              $(contentElement)
-                .attr("url")
-                .includes("twitter.com")
-            )
-              hotlinkType = "twitter-embed";
-
-            postContent.push({
-              type: "hotlink",
-              hotlinkType: hotlinkType,
-              url: $(contentElement).attr("url")
-            });
-            break;
-          default:
-            postContent.push({
-              type: "text",
-              content: $(contentElement).text()
-            });
-            break;
-        }
-      });
 
     // Push the post to the list
     posts.push({
       user: {
+        country: postUserCountry,
         username: postUsername,
         userLevel: postUserLevel,
         url: postUserUrl,
         avatar: postUserAvatar ? postUserAvatar : null,
-        backgroundImage: backgroundImage
+        backgroundImage: backgroundImage,
+        isGold: 
       },
       content: postContent,
-      contentParsed: parsedContent
+      contentParsed: parsedContent,
+      meta: postMeta,
+      canreply: postCanReply,
+      canvote: postCanVote,
+
     });
   });
 
