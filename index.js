@@ -547,7 +547,8 @@ async function thread (req, res, next) {
 async function manifest(req, res, next) {
   let content = await axios.get("https://forum.facepunch.com/manifest")
   let contentRaw = content.data.trim()
-
+  
+  // This might be dumb as all hell, but it works ¯\_(ツ)_/¯
   let window = {};
   nodeEval(contentRaw, '', {window})
   res.send(window)
