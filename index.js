@@ -1,9 +1,7 @@
 var restify = require("restify");
 const cheerio = require("cheerio");
 const axios = require("axios");
-const nodeEval = require('node-eval');
-
-
+const nodeEval = require("node-eval");
 
 // Used for watinng JS load
 async function waitFor($config) {
@@ -30,23 +28,23 @@ function parseOps(opsObject) {
 
   // Loop through the objects
   opsObject.forEach(function(item, index) {
-    let lastParsedObj = parsedOps[parsedOps.length - 1]
-    let obj = item
-    let objContent = item.insert
+    let lastParsedObj = parsedOps[parsedOps.length - 1];
+    let obj = item;
+    let objContent = item.insert;
 
     // If first object just add it
     if (index == 0) {
-      if (objContent.hasOwnProperty('hotlink')) {
+      if (objContent.hasOwnProperty("hotlink")) {
         parsedOps.push({
-          type: 'hotlink',
+          type: "hotlink",
           url: objContent.hotlink.url,
           force: objContent.hotlink.force,
           thumb: objContent.hotlink.thumb
-        })
-      } else if (objContent.hasOwnProperty('postquote')) {
-        let postquote = objContent.postquote
+        });
+      } else if (objContent.hasOwnProperty("postquote")) {
+        let postquote = objContent.postquote;
         parsedOps.push({
-          type: 'postquote',
+          type: "postquote",
           text: postquote.text,
           forumid: postquote.forumid,
           threadid: postquote.threadid,
@@ -54,40 +52,48 @@ function parseOps(opsObject) {
           postnumber: postquote.postnumber,
           username: postquote.username,
           userid: postquote.userid
-        })
+        });
       } else {
         parsedOps.push({
-          type: 'text',
+          type: "text",
           text: objContent,
           attributes: obj.attributes ? obj.attributes : null,
           children: []
-        })
+        });
       }
     } else {
       // Now we need to check if we need to add the current object to the last
       // if it's a text object.
       // hotlinks, postquotes etc, should be it's own seperate object
 
-      if (objContent.hasOwnProperty('hotlink')) {
-        let contentType = null
+      if (objContent.hasOwnProperty("hotlink")) {
+        let contentType = null;
 
-        if (objContent.hotlink.url.includes('youtube.com') || objContent.hotlink.url.includes('youtu.be')) contentType = 'youtube'
-        if (objContent.hotlink.url.includes('twitter.com')) contentType = 'twitter'
-        if (objContent.hotlink.url.includes('clips.twitch.tv')) contentType = 'twitch'
-        if (objContent.hotlink.url.includes('facebook.com')) contentType = 'facebook'
-        if (objContent.hotlink.url.includes('vimeo.com')) contentType = 'facebook'
+        if (
+          objContent.hotlink.url.includes("youtube.com") ||
+          objContent.hotlink.url.includes("youtu.be")
+        )
+          contentType = "youtube";
+        if (objContent.hotlink.url.includes("twitter.com"))
+          contentType = "twitter";
+        if (objContent.hotlink.url.includes("clips.twitch.tv"))
+          contentType = "twitch";
+        if (objContent.hotlink.url.includes("facebook.com"))
+          contentType = "facebook";
+        if (objContent.hotlink.url.includes("vimeo.com"))
+          contentType = "facebook";
 
         parsedOps.push({
-          type: 'hotlink',
+          type: "hotlink",
           url: objContent.hotlink.url,
           force: objContent.hotlink.force,
           thumb: objContent.hotlink.thumb,
           contentType: contentType
-        })
-      } else if (objContent.hasOwnProperty('postquote')) {
-        let postquote = objContent.postquote
+        });
+      } else if (objContent.hasOwnProperty("postquote")) {
+        let postquote = objContent.postquote;
         parsedOps.push({
-          type: 'postquote',
+          type: "postquote",
           text: postquote.text,
           forumid: postquote.forumid,
           threadid: postquote.threadid,
@@ -95,42 +101,54 @@ function parseOps(opsObject) {
           postnumber: postquote.postnumber,
           username: postquote.username,
           userid: postquote.userid
-        })
+        });
       } else {
         // Merge if same type
-        if (lastParsedObj.type === 'text') {
-
+        if (lastParsedObj.type === "text") {
           // Handle list items
           if (obj.attributes && obj.attributes.list) {
-            lastChildObj = lastParsedObj.children[lastParsedObj.children.length - 1]
+            lastChildObj =
+              lastParsedObj.children[lastParsedObj.children.length - 1];
 
             // Check if it's the first child element
             // If it is, add the attributes to the main text object
 
             if (lastChildObj) {
               // Is not the first child element
-              if (lastChildObj.hasOwnProperty('attributes') && lastChildObj.attributes !== null) {
-                lastParsedObj.children[lastParsedObj.children.length - 1].attributes.list = obj.attributes.list
-                delete obj.attributes.list
+              if (
+                lastChildObj.hasOwnProperty("attributes") &&
+                lastChildObj.attributes !== null
+              ) {
+                lastParsedObj.children[
+                  lastParsedObj.children.length - 1
+                ].attributes.list = obj.attributes.list;
+                delete obj.attributes.list;
               } else {
-                lastParsedObj.children[lastParsedObj.children.length - 1]['attributes'] = {
+                lastParsedObj.children[lastParsedObj.children.length - 1][
+                  "attributes"
+                ] = {
                   list: obj.attributes.list
-                }
+                };
                 // Delete the old attributes
-                delete obj.attributes.list
+                delete obj.attributes.list;
               }
             } else {
               // Is the first child element
-              if (lastParsedObj.hasOwnProperty('attributes') && lastParsedObj.attributes !== null) {
-                lastParsedObj.children[lastParsedObj.children.length - 1].attributes.list = obj.attributes.list
+              if (
+                lastParsedObj.hasOwnProperty("attributes") &&
+                lastParsedObj.attributes !== null
+              ) {
+                lastParsedObj.children[
+                  lastParsedObj.children.length - 1
+                ].attributes.list = obj.attributes.list;
                 // Delete the old attributes
-                delete obj.attributes.list
+                delete obj.attributes.list;
               } else {
-                lastParsedObj['attributes'] = {
+                lastParsedObj["attributes"] = {
                   list: obj.attributes.list
-                }
+                };
                 // Delete the old attributes
-                delete obj.attributes.list
+                delete obj.attributes.list;
               }
             }
           }
@@ -139,23 +157,22 @@ function parseOps(opsObject) {
           lastParsedObj.children.push({
             attributes: obj.attributes ? obj.attributes : null,
             text: objContent
-          })
+          });
         } else {
           // Push new text obj
           parsedOps.push({
-            type: 'text',
+            type: "text",
             text: objContent,
             attributes: obj.attributes ? obj.attributes : null,
             children: []
-          })
+          });
         }
       }
     }
-  })
+  });
 
-  return parsedOps
+  return parsedOps;
 }
-
 
 async function forums(req, res, next) {
   let content = await axios.get("https://forum.facepunch.com/f/");
@@ -173,52 +190,54 @@ async function forums(req, res, next) {
     $(".forumblock").each(function(index, element) {
       let subforums = [];
 
-      let id = $(this)
+      let id = $(element)
         .find(".bglink")
         .attr("href")
         .substr(1);
-      let viewers = parseInt($(this)
-        .find(".forumtitle span")
-        .text())
-      $(this)
+      let viewers = parseInt(
+        $(element)
+          .find(".forumtitle span")
+          .text()
+      );
+      $(element)
         .find(".forumtitle span")
         .remove(); // This is needed to get the title correctly.
-      let title = $(this)
+      let title = $(element)
         .find(".forumtitle")
         .text();
-      let icon = $(this)
+      let icon = $(element)
         .find("img")
         .attr("src");
 
-      let subtitle = $(this)
+      let subtitle = $(element)
         .find(".forumsubtitle")
         .text();
 
-      $(this)
+      $(element)
         .find(".threadcount")
         .find(".label")
         .remove();
       let threadCount = parseInt(
-        $(this)
+        $(element)
           .find(".threadcount")
           .attr("title")
           .trim()
           .slice(0, -8)
       );
 
-      $(this)
+      $(element)
         .find(".postcount")
         .find(".label")
         .remove();
       let postCount = parseInt(
-        $(this)
+        $(element)
           .find(".postcount")
           .attr("title")
           .trim()
           .slice(0, -5)
       );
 
-      let latestPost = $(this).find(".forumlastpost");
+      let latestPost = $(element).find(".forumlastpost");
       let latestPostTitle = latestPost
         .find(".threadname")
         .text()
@@ -289,7 +308,7 @@ async function forums(req, res, next) {
 async function forum(req, res, next) {
   let content = await axios.get(
     "https://forum.facepunch.com/f/" + req.params.forumid
-  )
+  );
 
   var $ = cheerio.load(content.data);
 
@@ -307,7 +326,7 @@ async function forum(req, res, next) {
       .find("img")
       .attr("src");
 
-    let isSticky = $(this).hasClass('is-sticky')
+    let isSticky = $(this).hasClass("is-sticky");
 
     let threadsubforum = $(this)
       .find(".threadsubforum")
@@ -391,7 +410,7 @@ async function forum(req, res, next) {
   next();
 }
 
-async function thread (req, res, next) {
+async function thread(req, res, next) {
   console.log("Fetching thread");
   let content = await axios.get(
     "https://forum.facepunch.com/f/" +
@@ -418,16 +437,31 @@ async function thread (req, res, next) {
 
   $("postrender").each((index, post) => {
     // Get username
-    let postUsername = $(post).attr("username")
-    let postUserLevel = parseInt($(post).attr("level"))
-    let postUserUrl = $(post).attr("userurl")
-    let postUserAvatar = $(post).attr("avatar")
-    let postUserCountry = $(post).attr("country")
+    let postUsername = $(post).attr("username");
+    let postUserLevel = parseInt($(post).attr("level"));
+    let postUserUrl = $(post).attr("userurl");
+    let postUserAvatar = $(post).attr("avatar");
+    let postUserCountry = $(post).attr("country");
 
-    let postUserRank = 'normal'
-    if ($(post).attr("userclass").includes('user-gold')) postUserRank = 'gold'
-    if ($(post).attr("userclass").includes('user-moderator')) postUserRank = 'moderator'
-    if ($(post).attr("userclass").includes('user-admin')) postUserRank = 'admin'
+    let postUserRank = "normal";
+    if (
+      $(post)
+        .attr("userclass")
+        .includes("user-gold")
+    )
+      postUserRank = "gold";
+    if (
+      $(post)
+        .attr("userclass")
+        .includes("user-moderator")
+    )
+      postUserRank = "moderator";
+    if (
+      $(post)
+        .attr("userclass")
+        .includes("user-admin")
+    )
+      postUserRank = "admin";
 
     // Get background image (if any)
     let backgroundImage = null;
@@ -437,10 +471,9 @@ async function thread (req, res, next) {
     let postContent = JSON.parse($(post).attr("input"));
     let parsedContent = parseOps(postContent.ops);
 
-    let postMeta = JSON.parse($(post).attr('meta'))
-    let postCanReply = JSON.parse($(post).attr('canreply'))
-    let postCanVote = JSON.parse($(post).attr('canvote'))
-
+    let postMeta = JSON.parse($(post).attr("meta"));
+    let postCanReply = JSON.parse($(post).attr("canreply"));
+    let postCanVote = JSON.parse($(post).attr("canvote"));
 
     // Push the post to the list
     posts.push({
@@ -457,8 +490,7 @@ async function thread (req, res, next) {
       contentParsed: parsedContent,
       meta: postMeta,
       canreply: postCanReply,
-      canvote: postCanVote,
-
+      canvote: postCanVote
     });
   });
 
@@ -473,14 +505,14 @@ async function thread (req, res, next) {
 }
 
 async function manifest(req, res, next) {
-  let content = await axios.get("https://forum.facepunch.com/manifest")
-  let contentRaw = content.data.trim()
-  
+  let content = await axios.get("https://forum.facepunch.com/manifest");
+  let contentRaw = content.data.trim();
+
   // This might be dumb as all hell, but it works ¯\_(ツ)_/¯
   let window = {};
-  nodeEval(contentRaw, '', {window})
-  res.send(window)
-  next()
+  nodeEval(contentRaw, "", { window });
+  res.send(window);
+  next();
 }
 
 var server = restify.createServer();
