@@ -177,9 +177,9 @@ async function forums(req, res, next) {
         .find(".bglink")
         .attr("href")
         .substr(1);
-      let viewers = $(this)
+      let viewers = parseInt($(this)
         .find(".forumtitle span")
-        .text();
+        .text())
       $(this)
         .find(".forumtitle span")
         .remove(); // This is needed to get the title correctly.
