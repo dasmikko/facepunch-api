@@ -179,7 +179,7 @@ async function forums(req, res, next) {
   var $ = cheerio.load(content.data);
   let categories = [];
 
-  $(".forumcategoryblock").each(function(index, element) {
+  $(".forumcategoryblock").each(function(index, category) {
     let categoryName = $(this)
       .find(".categorytitle")
       .text()
@@ -187,114 +187,113 @@ async function forums(req, res, next) {
 
     let items = [];
 
-    $(".forumblock").each(function(index, element) {
-      let subforums = [];
+    $(category)
+      .find(".forumblock")
+      .each(function(index, element) {
+        let subforums = [];
 
-      let id = $(element)
-        .find(".bglink")
-        .attr("href")
-        .substr(1);
-      let viewers = parseInt(
+        let id = $(element)
+          .find(".bglink")
+          .attr("href")
+          .substr(1);
+        let viewers = parseInt(
+          $(element)
+            .find(".forumtitle span")
+            .text()
+        );
         $(element)
           .find(".forumtitle span")
-          .text()
-      );
-      $(element)
-        .find(".forumtitle span")
-        .remove(); // This is needed to get the title correctly.
-      let title = $(element)
-        .find(".forumtitle")
-        .text();
-      let icon = $(element)
-        .find("img")
-        .attr("src");
+          .remove(); // This is needed to get the title correctly.
+        let title = $(element)
+          .find(".forumtitle")
+          .text();
+        let icon = $(element)
+          .find("img")
+          .attr("src");
 
-      let subtitle = $(element)
-        .find(".forumsubtitle")
-        .text();
+        let subtitle = $(element)
+          .find(".forumsubtitle")
+          .text();
 
-      $(element)
-        .find(".threadcount")
-        .find(".label")
-        .remove();
-      let threadCount = parseInt(
         $(element)
           .find(".threadcount")
-          .attr("title")
-          .trim()
-          .slice(0, -8)
-      );
+          .find(".label")
+          .remove();
+        let threadCount = parseInt(
+          $(element)
+            .find(".threadcount")
+            .attr("title")
+            .trim()
+            .slice(0, -8)
+        );
 
-      $(element)
-        .find(".postcount")
-        .find(".label")
-        .remove();
-      let postCount = parseInt(
         $(element)
           .find(".postcount")
-          .attr("title")
-          .trim()
-          .slice(0, -5)
-      );
+          .find(".label")
+          .remove();
+        let postCount = parseInt(
+          $(element)
+            .find(".postcount")
+            .attr("title")
+            .trim()
+            .slice(0, -5)
+        );
 
-      let latestPost = $(element).find(".forumlastpost");
-      let latestPostTitle = latestPost
-        .find(".threadname")
-        .text()
-        .trim();
-      let latestPostUsername = latestPost.find(".username a").text();
+        let latestPost = $(element).find(".forumlastpost");
+        let latestPostTitle = latestPost
+          .find(".threadname")
+          .text()
+          .trim();
+        let latestPostUsername = latestPost.find(".username a").text();
 
-      let latestPostUserId = latestPost
-        .find(".username a")
-        .attr("href")
-        .substr(3);
-      latestPostUserId = latestPostUserId.slice(0, -1);
+        let latestPostUserId = latestPost
+          .find(".username a")
+          .attr("href")
+          .substr(3);
+        latestPostUserId = latestPostUserId.slice(0, -1);
 
-      let latestPostDate = latestPost.find(".timeago").attr("title");
-      let latestPostTimeAgo = latestPost
-        .find(".timeago")
-        .text()
-        .trim();
+        let latestPostDate = latestPost.find(".timeago").attr("title");
+        let latestPostTimeAgo = latestPost
+          .find(".timeago")
+          .text()
+          .trim();
 
-      // Loop subforums
-      $(element)
-        .find(".forumsubforums>.subforum")
-        .each(function(index, subforum) {
-          let subforumTitle = $(subforum)
-            .find("a")
-            .text();
-          let subforumId = $(subforum)
-            .find("a")
-            .attr("href")
-            .substr(3);
-          subforumId = subforumId.slice(0, -1);
+        // Loop subforums
+        $(element)
+          .find(".forumsubforums>.subforum")
+          .each(function(index, subforum) {
+            let subforumTitle = $(subforum)
+              .find("a")
+              .text();
+            let subforumId = $(subforum)
+              .find("a")
+              .attr("href")
+              .substr(3);
+            subforumId = subforumId.slice(0, -1);
 
-          subforums.push({
-            id: subforumId,
-            title: subforumTitle
+            subforums.push({ id: subforumId, title: subforumTitle });
           });
-        });
 
-      items.push({
-        id: id,
-        icon: icon,
-        title: title.trim(),
-        subtitle: subtitle.trim(),
-        viewers: viewers,
-        threadCount: threadCount,
-        postCount: postCount,
-        latestPost: {
-          title: latestPostTitle,
-          timeAgo: latestPostTimeAgo,
-          date: latestPostDate,
-          user: {
-            id: latestPostUserId,
-            username: latestPostUsername
-          }
-        },
-        subforums: subforums
-      });
-    }); // Forums
+        items.push({
+          id: id,
+          icon: icon,
+          title: title.trim(),
+          subtitle: subtitle.trim(),
+          viewers: viewers,
+          threadCount: threadCount,
+          postCount: postCount,
+          latestPost: {
+            title: latestPostTitle,
+            timeAgo: latestPostTimeAgo,
+            date: latestPostDate,
+            user: {
+              id: latestPostUserId,
+              username: latestPostUsername
+            }
+          },
+          subforums: subforums
+        });
+      }); // Forums
 
     categories.push({
       categoryName: categoryName,
