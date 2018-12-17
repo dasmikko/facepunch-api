@@ -470,9 +470,14 @@ async function thread(req, res, next) {
     let postContent = JSON.parse($(post).attr("input"));
     let parsedContent = parseOps(postContent.ops);
 
-    let postMeta = JSON.parse($(post).attr("meta"));
-    let postCanReply = JSON.parse($(post).attr("canreply"));
-    let postCanVote = JSON.parse($(post).attr("canvote"));
+    let postMeta = {};
+
+    if ($(post).attr("meta")) {
+      postMeta = JSON.parse($(post).attr("meta"));
+    }
+
+    let postCanReply = $(post).attr("canreply");
+    let postCanVote = $(post).attr("canvote");
 
     // Push the post to the list
     posts.push({
