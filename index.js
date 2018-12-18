@@ -3,26 +3,6 @@ const cheerio = require("cheerio");
 const axios = require("axios");
 const nodeEval = require("node-eval");
 
-// Used for watinng JS load
-async function waitFor($config) {
-  $config._start = $config._start || new Date();
-
-  if ($config.timeout && new Date() - $config._start > $config.timeout) {
-    if ($config.error) $config.error();
-    if ($config.debug)
-      console.log("timedout " + (new Date() - $config._start) + "ms");
-    return;
-  }
-
-  if ($config.check()) {
-    if ($config.debug)
-      console.log("success " + (new Date() - $config._start) + "ms");
-    return $config.success();
-  }
-
-  setTimeout(waitFor, $config.interval || 0, $config);
-}
-
 function parseOps(opsObject) {
   parsedOps = [];
 
@@ -37,28 +17,41 @@ function parseOps(opsObject) {
       if (objContent.hasOwnProperty("hotlink")) {
         parsedOps.push({
           type: "hotlink",
-          url: objContent.hotlink.url,
-          force: objContent.hotlink.force,
-          thumb: objContent.hotlink.thumb
+          options: {
+            url: objContent.hotlink.url,
+            force: objContent.hotlink.force,
+            thumb: objContent.hotlink.thumb
+          }
         });
       } else if (objContent.hasOwnProperty("postquote")) {
         let postquote = objContent.postquote;
         parsedOps.push({
           type: "postquote",
-          text: postquote.text,
-          forumid: postquote.forumid,
-          threadid: postquote.threadid,
-          postid: postquote.postid,
-          postnumber: postquote.postnumber,
-          username: postquote.username,
-          userid: postquote.userid
+          options: {
+            text: postquote.text,
+            forumid: postquote.forumid,
+            threadid: postquote.threadid,
+            postid: postquote.postid,
+            postnumber: postquote.postnumber,
+            username: postquote.username,
+            userid: postquote.userid
+          }
         });
       } else {
+        let postOptions = {
+          text: objContent,
+          attributes: {
+            bold: obj.attributes && obj.attributes.hasOwnProperty('bold') ? obj.attributes.bold : false,
+            italic: obj.attributes && obj.attributes.hasOwnProperty('italic') ? obj.attributes.icalic : false,
+            strikethrough: obj.attributes && obj.attributes.hasOwnProperty('strikethrough') ? obj.attributes.strikethrough : false,
+            list: obj.attributes && obj.attributes.hasOwnProperty('list') ? obj.attributes.list : false
+          },
+          children: []
+        };
+
         parsedOps.push({
           type: "text",
-          text: objContent,
-          attributes: obj.attributes ? obj.attributes : null,
-          children: []
+          options: postOptions
         });
       }
     } else {
@@ -85,22 +78,26 @@ function parseOps(opsObject) {
 
         parsedOps.push({
           type: "hotlink",
-          url: objContent.hotlink.url,
-          force: objContent.hotlink.force,
-          thumb: objContent.hotlink.thumb,
-          contentType: contentType
+          options: {
+            url: objContent.hotlink.url,
+            force: objContent.hotlink.force,
+            thumb: objContent.hotlink.thumb,
+            contentType: contentType
+          }
         });
       } else if (objContent.hasOwnProperty("postquote")) {
         let postquote = objContent.postquote;
         parsedOps.push({
           type: "postquote",
-          text: postquote.text,
-          forumid: postquote.forumid,
-          threadid: postquote.threadid,
-          postid: postquote.postid,
-          postnumber: postquote.postnumber,
-          username: postquote.username,
-          userid: postquote.userid
+          options: {
+            text: postquote.text,
+            forumid: postquote.forumid,
+            threadid: postquote.threadid,
+            postid: postquote.postid,
+            postnumber: postquote.postnumber,
+            username: postquote.username,
+            userid: postquote.userid
+          }
         });
       } else {
         // Merge if same type
@@ -108,25 +105,20 @@ function parseOps(opsObject) {
           // Handle list items
           if (obj.attributes && obj.attributes.list) {
             lastChildObj =
-              lastParsedObj.children[lastParsedObj.children.length - 1];
+              lastParsedObj.options.children[lastParsedObj.options.children.length - 1];
 
             // Check if it's the first child element
             // If it is, add the attributes to the main text object
+            
+            console.log(lastChildObj)
 
             if (lastChildObj) {
               // Is not the first child element
-              if (
-                lastChildObj.hasOwnProperty("attributes") &&
-                lastChildObj.attributes !== null
-              ) {
-                lastParsedObj.children[
-                  lastParsedObj.children.length - 1
-                ].attributes.list = obj.attributes.list;
+              if (lastChildObj.hasOwnProperty("attributes") && lastChildObj.attributes !== null) {
+                lastParsedObj.options.children[lastParsedObj.options.children.length - 1].attributes.list = obj.attributes.list;
                 delete obj.attributes.list;
               } else {
-                lastParsedObj.children[lastParsedObj.children.length - 1][
-                  "attributes"
-                ] = {
+                lastParsedObj.options.children[lastParsedObj.options.children.length - 1]["attributes"] = {
                   list: obj.attributes.list
                 };
                 // Delete the old attributes
@@ -135,16 +127,12 @@ function parseOps(opsObject) {
             } else {
               // Is the first child element
               if (
-                lastParsedObj.hasOwnProperty("attributes") &&
-                lastParsedObj.attributes !== null
-              ) {
-                lastParsedObj.children[
-                  lastParsedObj.children.length - 1
-                ].attributes.list = obj.attributes.list;
+                lastParsedObj.options.hasOwnProperty("attributes") && lastParsedObj.options.attributes !== null) {
+                lastParsedObj.options.children[lastParsedObj.children.length - 1].attributes.list = obj.attributes.list;
                 // Delete the old attributes
                 delete obj.attributes.list;
               } else {
-                lastParsedObj["attributes"] = {
+                lastParsedObj.options["attributes"] = {
                   list: obj.attributes.list
                 };
                 // Delete the old attributes
@@ -153,19 +141,36 @@ function parseOps(opsObject) {
             }
           }
 
+          let postOptions = {
+            attributes: {
+              bold: obj.attributes && obj.attributes.hasOwnProperty('bold') ? obj.attributes.bold : false,
+              italic: obj.attributes && obj.attributes.hasOwnProperty('italic') ? obj.attributes.italic : false,
+              strikethrough: obj.attributes && obj.attributes.hasOwnProperty('strikethrough') ? obj.attributes.strikethrough : false,
+              list: obj.attributes && obj.attributes.hasOwnProperty('list') ? obj.attributes.list : false
+            }
+          }
+
           // Add child text element
-          lastParsedObj.children.push({
-            attributes: obj.attributes ? obj.attributes : null,
-            text: objContent
+          lastParsedObj.options.children.push({
+            text: objContent,
+            options: postOptions
           });
         } else {
-          // Push new text obj
+          let postOptions = {
+            text: objContent,
+            attributes: {
+              bold: obj.attributes && obj.attributes.hasOwnProperty('bold') ? obj.attributes.bold : false,
+              italic: obj.attributes && obj.attributes.hasOwnProperty('italic') ? obj.attributes.italic : false,
+              strikethrough: obj.attributes && obj.attributes.hasOwnProperty('strikethrough') ? obj.attributes.strikethrough : false,
+              list: obj.attributes && obj.attributes.hasOwnProperty('list') ? obj.attributes.list : false
+            },
+            children: []
+          }
+  
           parsedOps.push({
             type: "text",
-            text: objContent,
-            attributes: obj.attributes ? obj.attributes : null,
-            children: []
-          });
+            options: postOptions
+          })
         }
       }
     }
