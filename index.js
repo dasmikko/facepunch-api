@@ -62,7 +62,8 @@ function parseOps(opsObject) {
             list:
               obj.attributes && obj.attributes.hasOwnProperty("list")
                 ? obj.attributes.list
-                : 'normal'
+                : 'normal',
+            isEmote: false
           },
           children: []
         };
