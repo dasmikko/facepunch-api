@@ -118,10 +118,22 @@ function parseOps(opsObject) {
           }
         });
       } else if (objContent.hasOwnProperty("emote")) {
-        parsedOps.push({
-          type: "emote",
-          emoteId: objContent.emote
-        });
+        if (lastParsedObj.type === "text") {
+          let childOptions = {
+            attributes: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              list: 'normal',
+              isEmote: true
+            }
+          };
+
+          lastParsedObj.options.children.push({
+            text: objContent.emote,
+            options: childOptions
+          });
+        }
       } else {
         // Merge if same type
         if (lastParsedObj.type === "text") {
@@ -186,7 +198,8 @@ function parseOps(opsObject) {
               list:
                 obj.attributes && obj.attributes.hasOwnProperty("list")
                   ? obj.attributes.list
-                  : 'normal'
+                  : 'normal',
+              isEmote: false
             }
           };
 
@@ -214,7 +227,8 @@ function parseOps(opsObject) {
               list:
                 obj.attributes && obj.attributes.hasOwnProperty("list")
                   ? obj.attributes.list
-                  : 'normal'
+                  : 'normal',
+              isEmote: false
             },
             children: []
           };
