@@ -41,10 +41,22 @@ function parseOps(opsObject) {
         let postOptions = {
           text: objContent,
           attributes: {
-            bold: obj.attributes && obj.attributes.hasOwnProperty('bold') ? obj.attributes.bold : false,
-            italic: obj.attributes && obj.attributes.hasOwnProperty('italic') ? obj.attributes.icalic : false,
-            strikethrough: obj.attributes && obj.attributes.hasOwnProperty('strikethrough') ? obj.attributes.strikethrough : false,
-            list: obj.attributes && obj.attributes.hasOwnProperty('list') ? obj.attributes.list : false
+            bold:
+              obj.attributes && obj.attributes.hasOwnProperty("bold")
+                ? obj.attributes.bold
+                : false,
+            italic:
+              obj.attributes && obj.attributes.hasOwnProperty("italic")
+                ? obj.attributes.icalic
+                : false,
+            strikethrough:
+              obj.attributes && obj.attributes.hasOwnProperty("strikethrough")
+                ? obj.attributes.strikethrough
+                : false,
+            list:
+              obj.attributes && obj.attributes.hasOwnProperty("list")
+                ? obj.attributes.list
+                : 'normal'
           },
           children: []
         };
@@ -104,21 +116,27 @@ function parseOps(opsObject) {
         if (lastParsedObj.type === "text") {
           // Handle list items
           if (obj.attributes && obj.attributes.list) {
-            lastChildObj =
-              lastParsedObj.options.children[lastParsedObj.options.children.length - 1];
+            lastChildObj = lastParsedObj.options.children[lastParsedObj.options.children.length - 1];
 
             // Check if it's the first child element
             // If it is, add the attributes to the main text object
-            
-            console.log(lastChildObj)
+
+            console.log(lastChildObj);
 
             if (lastChildObj) {
               // Is not the first child element
-              if (lastChildObj.hasOwnProperty("attributes") && lastChildObj.attributes !== null) {
-                lastParsedObj.options.children[lastParsedObj.options.children.length - 1].attributes.list = obj.attributes.list;
+              if (
+                lastChildObj.hasOwnProperty("attributes") &&
+                lastChildObj.attributes !== null
+              ) {
+                lastParsedObj.options.children[
+                  lastParsedObj.options.children.length - 1
+                ].attributes.list = obj.attributes.list;
                 delete obj.attributes.list;
               } else {
-                lastParsedObj.options.children[lastParsedObj.options.children.length - 1]["attributes"] = {
+                lastParsedObj.options.children[
+                  lastParsedObj.options.children.length - 1
+                ]["attributes"] = {
                   list: obj.attributes.list
                 };
                 // Delete the old attributes
@@ -126,9 +144,8 @@ function parseOps(opsObject) {
               }
             } else {
               // Is the first child element
-              if (
-                lastParsedObj.options.hasOwnProperty("attributes") && lastParsedObj.options.attributes !== null) {
-                lastParsedObj.options.children[lastParsedObj.children.length - 1].attributes.list = obj.attributes.list;
+              if (lastParsedObj.options.hasOwnProperty("attributes") && lastParsedObj.options.attributes !== null) {
+                lastParsedObj.options.attributes.list = obj.attributes.list;
                 // Delete the old attributes
                 delete obj.attributes.list;
               } else {
@@ -143,12 +160,24 @@ function parseOps(opsObject) {
 
           let postOptions = {
             attributes: {
-              bold: obj.attributes && obj.attributes.hasOwnProperty('bold') ? obj.attributes.bold : false,
-              italic: obj.attributes && obj.attributes.hasOwnProperty('italic') ? obj.attributes.italic : false,
-              strikethrough: obj.attributes && obj.attributes.hasOwnProperty('strikethrough') ? obj.attributes.strikethrough : false,
-              list: obj.attributes && obj.attributes.hasOwnProperty('list') ? obj.attributes.list : false
+              bold:
+                obj.attributes && obj.attributes.hasOwnProperty("bold")
+                  ? obj.attributes.bold
+                  : false,
+              italic:
+                obj.attributes && obj.attributes.hasOwnProperty("italic")
+                  ? obj.attributes.italic
+                  : false,
+              strikethrough:
+                obj.attributes && obj.attributes.hasOwnProperty("strikethrough")
+                  ? obj.attributes.strikethrough
+                  : false,
+              list:
+                obj.attributes && obj.attributes.hasOwnProperty("list")
+                  ? obj.attributes.list
+                  : 'normal'
             }
-          }
+          };
 
           // Add child text element
           lastParsedObj.options.children.push({
@@ -159,18 +188,30 @@ function parseOps(opsObject) {
           let postOptions = {
             text: objContent,
             attributes: {
-              bold: obj.attributes && obj.attributes.hasOwnProperty('bold') ? obj.attributes.bold : false,
-              italic: obj.attributes && obj.attributes.hasOwnProperty('italic') ? obj.attributes.italic : false,
-              strikethrough: obj.attributes && obj.attributes.hasOwnProperty('strikethrough') ? obj.attributes.strikethrough : false,
-              list: obj.attributes && obj.attributes.hasOwnProperty('list') ? obj.attributes.list : false
+              bold:
+                obj.attributes && obj.attributes.hasOwnProperty("bold")
+                  ? obj.attributes.bold
+                  : false,
+              italic:
+                obj.attributes && obj.attributes.hasOwnProperty("italic")
+                  ? obj.attributes.italic
+                  : false,
+              strikethrough:
+                obj.attributes && obj.attributes.hasOwnProperty("strikethrough")
+                  ? obj.attributes.strikethrough
+                  : false,
+              list:
+                obj.attributes && obj.attributes.hasOwnProperty("list")
+                  ? obj.attributes.list
+                  : 'normal'
             },
             children: []
-          }
-  
+          };
+
           parsedOps.push({
             type: "text",
             options: postOptions
-          })
+          });
         }
       }
     }
