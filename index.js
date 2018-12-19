@@ -37,6 +37,12 @@ function parseOps(opsObject) {
             userid: postquote.userid
           }
         });
+
+      } else if (objContent.hasOwnProperty("emote")) {
+        parsedOps.push({
+          type: "emote",
+          emoteId: objContent.emote
+        });
       } else {
         let postOptions = {
           text: objContent,
@@ -110,6 +116,11 @@ function parseOps(opsObject) {
             username: postquote.username,
             userid: postquote.userid
           }
+        });
+      } else if (objContent.hasOwnProperty("emote")) {
+        parsedOps.push({
+          type: "emote",
+          emoteId: objContent.emote
         });
       } else {
         // Merge if same type
