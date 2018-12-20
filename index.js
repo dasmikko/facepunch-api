@@ -37,7 +37,6 @@ function parseOps(opsObject) {
             userid: postquote.userid
           }
         });
-
       } else if (objContent.hasOwnProperty("emote")) {
         parsedOps.push({
           type: "emote",
@@ -62,8 +61,9 @@ function parseOps(opsObject) {
             list:
               obj.attributes && obj.attributes.hasOwnProperty("list")
                 ? obj.attributes.list
-                : 'normal',
-            isEmote: false
+                : "normal",
+            isEmote: false,
+            isMention: false
           },
           children: []
         };
@@ -125,8 +125,9 @@ function parseOps(opsObject) {
               bold: false,
               italic: false,
               strikethrough: false,
-              list: 'normal',
-              isEmote: true
+              list: "normal",
+              isEmote: true,
+              isMention: false
             }
           };
 
@@ -135,18 +136,37 @@ function parseOps(opsObject) {
             options: childOptions
           });
         }
+      } else if (objContent.hasOwnProperty("mention")) {
+        if (lastParsedObj.type === "text") {
+          let childOptions = {
+            attributes: {
+              bold: false,
+              italic: false,
+              strikethrough: false,
+              list: "normal",
+              isEmote: false,
+              isMention: true
+            }
+          };
+
+          lastParsedObj.options.children.push({
+            text: "",
+            mention: objContent.mention,
+            options: childOptions
+          });
+        }
       } else {
         // Merge if same type
         if (lastParsedObj.type === "text") {
           // Handle list items
           if (obj.attributes && obj.attributes.list) {
-            lastChildObj = lastParsedObj.options.children[lastParsedObj.options.children.length - 1];
+            lastChildObj =
+              lastParsedObj.options.children[
+                lastParsedObj.options.children.length - 1
+              ];
 
             // Check if it's the first child element
             // If it is, add the attributes to the main text object
-
-            console.log(lastChildObj);
-
             if (lastChildObj) {
               // Is not the first child element
               if (
@@ -168,7 +188,10 @@ function parseOps(opsObject) {
               }
             } else {
               // Is the first child element
-              if (lastParsedObj.options.hasOwnProperty("attributes") && lastParsedObj.options.attributes !== null) {
+              if (
+                lastParsedObj.options.hasOwnProperty("attributes") &&
+                lastParsedObj.options.attributes !== null
+              ) {
                 lastParsedObj.options.attributes.list = obj.attributes.list;
                 // Delete the old attributes
                 delete obj.attributes.list;
@@ -199,7 +222,7 @@ function parseOps(opsObject) {
               list:
                 obj.attributes && obj.attributes.hasOwnProperty("list")
                   ? obj.attributes.list
-                  : 'normal',
+                  : "normal",
               isEmote: false
             }
           };
@@ -228,7 +251,7 @@ function parseOps(opsObject) {
               list:
                 obj.attributes && obj.attributes.hasOwnProperty("list")
                   ? obj.attributes.list
-                  : 'normal',
+                  : "normal",
               isEmote: false
             },
             children: []
@@ -562,7 +585,6 @@ async function thread(req, res, next) {
         backgroundImage: backgroundImage,
         userRank: postUserRank
       },
-      content: postContent,
       contentParsed: parsedContent,
       meta: postMeta,
       canreply: postCanReply,
