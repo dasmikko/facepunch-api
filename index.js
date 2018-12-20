@@ -42,6 +42,11 @@ function parseOps(opsObject) {
           type: "emote",
           emoteId: objContent.emote
         });
+      } else if (objContent.hasOwnProperty("emote")) {
+        parsedOps.push({
+          type: "mention",
+          mention: objContent.mention
+        });
       } else {
         let postOptions = {
           text: objContent,
