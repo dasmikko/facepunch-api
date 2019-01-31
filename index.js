@@ -228,7 +228,8 @@ function parseOps(opsObject) {
                 obj.attributes && obj.attributes.hasOwnProperty("list")
                   ? obj.attributes.list
                   : "normal",
-              isEmote: false
+              isEmote: false,
+              isMention: false
             }
           };
 
@@ -257,7 +258,8 @@ function parseOps(opsObject) {
                 obj.attributes && obj.attributes.hasOwnProperty("list")
                   ? obj.attributes.list
                   : "normal",
-              isEmote: false
+              isEmote: false,
+              isMention: false
             },
             children: []
           };
