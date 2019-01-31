@@ -99,6 +99,13 @@ function parseOps(opsObject) {
           contentType = "facebook";
         if (objContent.hotlink.url.includes("vimeo.com"))
           contentType = "facebook";
+        if (
+          objContent.hotlink.url.includes(".png") ||
+          objContent.hotlink.url.includes(".jpg") ||
+          objContent.hotlink.url.includes(".jpeg") ||
+          objContent.hotlink.url.includes(".gif")
+        )
+          contentType = 'image'
 
         parsedOps.push({
           type: "hotlink",
