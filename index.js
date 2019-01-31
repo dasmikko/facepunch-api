@@ -84,7 +84,7 @@ function parseOps(opsObject) {
       // hotlinks, postquotes etc, should be it's own seperate object
 
       if (objContent.hasOwnProperty("hotlink")) {
-        let contentType = null;
+        let contentType = "Unknown";
 
         if (
           objContent.hotlink.url.includes("youtube.com") ||
@@ -105,7 +105,7 @@ function parseOps(opsObject) {
           objContent.hotlink.url.includes(".jpeg") ||
           objContent.hotlink.url.includes(".gif")
         )
-          contentType = 'image'
+          contentType = "image";
 
         parsedOps.push({
           type: "hotlink",
