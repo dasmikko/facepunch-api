@@ -607,6 +607,16 @@ async function thread(req, res, next) {
 
     var cfg = {};
     var converter = new QuillDeltaToHtmlConverter(postContent.ops, cfg);
+
+    converter.renderCustomWith(function(customOp, contextOp){
+      if (customOp.insert.type === 'hotlink') {
+          let val = customOp.insert.value;
+          return `<hotlink url="${val.url}">${val.url}</span>`;
+      } else {
+          return '<p>Unmanaged custom blot!</p>';
+      }
+  });
+
     let contentAsHtml = converter.convert(); 
 
     let postMeta = {};
