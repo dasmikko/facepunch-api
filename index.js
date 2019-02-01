@@ -15,12 +15,36 @@ function parseOps(opsObject) {
     // If first object just add it
     if (index == 0) {
       if (objContent.hasOwnProperty("hotlink")) {
+        let contentType = "Unknown";
+
+        if (
+          objContent.hotlink.url.includes("youtube.com") ||
+          objContent.hotlink.url.includes("youtu.be")
+        )
+          contentType = "youtube";
+        if (objContent.hotlink.url.includes("twitter.com"))
+          contentType = "twitter";
+        if (objContent.hotlink.url.includes("clips.twitch.tv"))
+          contentType = "twitch";
+        if (objContent.hotlink.url.includes("facebook.com"))
+          contentType = "facebook";
+        if (objContent.hotlink.url.includes("vimeo.com"))
+          contentType = "facebook";
+        if (
+          objContent.hotlink.url.includes(".png") ||
+          objContent.hotlink.url.includes(".jpg") ||
+          objContent.hotlink.url.includes(".jpeg") ||
+          objContent.hotlink.url.includes(".gif")
+        )
+          contentType = "image";
+
         parsedOps.push({
           type: "hotlink",
           options: {
             url: objContent.hotlink.url,
             force: objContent.hotlink.force,
-            thumb: objContent.hotlink.thumb
+            thumb: objContent.hotlink.thumb,
+            contentType: contentType
           }
         });
       } else if (objContent.hasOwnProperty("postquote")) {
