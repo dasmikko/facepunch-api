@@ -612,6 +612,12 @@ async function thread(req, res, next) {
           renderAsBlock: true
         }
       }
+
+      if (el.insert.hasOwnProperty("postquote")) {
+        el.attributes = {
+          renderAsBlock: true
+        };
+      }
     })
 
     var cfg = {};
@@ -619,10 +625,28 @@ async function thread(req, res, next) {
 
     converter.renderCustomWith(function(customOp, contextOp){
       if (customOp.insert.type === 'hotlink') {
-          let val = customOp.insert.value;
+          let val = customOp.insert.value
+          let contentType = 'Unkown'
+
+          if (val.url.includes(".png") ||
+          val.url.includes(".jpg") ||
+          val.url.includes(".jpeg") ||
+          val.url.includes(".gif")) {
+            contentType = 'image'
+          }
+
+          if (
+            val.url.includes("youtube.com") ||
+            val.url.includes("youtu.be")) {
+            contentType = 'youtube'
+          }
+
           return `<hotlink url="${val.url}">${val.url}</hotlink>`;
+      } else if (customOp.insert.type === "postquote") {
+        let val = customOp.insert.value;
+        return `<postquote forumid="${val.forumid}" threadid="${val.threadid}" postid="${val.postid}" username="${val.username}" userid="${val.userid}">${val.text}</postquote>`;
       } else {
-          return '<p>Unmanaged custom blot!</p>';
+        return "<p>Unmanaged custom blot!</p>";
       }
   });
 
