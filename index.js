@@ -2,6 +2,8 @@ var restify = require("restify");
 const cheerio = require("cheerio");
 const axios = require("axios");
 const nodeEval = require("node-eval");
+var QuillDeltaToHtmlConverter = require("quill-delta-to-html")
+  .QuillDeltaToHtmlConverter;
 
 function parseOps(opsObject) {
   parsedOps = [];
@@ -603,6 +605,10 @@ async function thread(req, res, next) {
     let postContent = JSON.parse($(post).attr("input"));
     let parsedContent = parseOps(postContent.ops);
 
+    var cfg = {};
+    var converter = new QuillDeltaToHtmlConverter(postContent.ops, cfg);
+    let contentAsHtml = converter.convert(); 
+
     let postMeta = {};
 
     if ($(post).attr("meta")) {
@@ -624,6 +630,7 @@ async function thread(req, res, next) {
         userRank: postUserRank
       },
       contentParsed: parsedContent,
+      contentAsHtml: contentAsHtml,
       meta: postMeta,
       canreply: postCanReply,
       canvote: postCanVote
