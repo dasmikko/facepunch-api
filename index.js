@@ -605,7 +605,6 @@ async function thread(req, res, next) {
     let postContent = JSON.parse($(post).attr("input"));
 
     postContent.ops.forEach((el, index) => {
-      console.log(el);
       if (el.insert.hasOwnProperty("hotlink")) {
         el.attributes = {
           renderAsBlock: true
@@ -686,10 +685,14 @@ async function thread(req, res, next) {
     });
   });
 
+  let totalPosts = parseInt($(".pagnation.above>pagnation").attr("total"))
+  let perPage = parseInt($(".pagnation.above>pagnation").attr("perpage"))
+  let totalPages = totalPosts / perPage
+
   res.send({
     threadName: threadName,
     currentPage: currentPage,
-    totalPages: parseInt($(".pagnation.above>pagnation").attr("total")),
+    totalPages: Math.ceil(totalPages),
     posts: posts
   });
 
