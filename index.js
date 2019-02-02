@@ -603,14 +603,13 @@ async function thread(req, res, next) {
     if ($(post).attr("userbackground"))
       backgroundImage = $(post).attr("userbackground");
     let postContent = JSON.parse($(post).attr("input"));
-    let parsedContent = parseOps(postContent.ops);
 
     postContent.ops.forEach((el, index) => {
-      console.log(el)
-      if (el.insert.hasOwnProperty('hotlink')) {
+      console.log(el);
+      if (el.insert.hasOwnProperty("hotlink")) {
         el.attributes = {
           renderAsBlock: true
-        }
+        };
       }
 
       if (el.insert.hasOwnProperty("postquote")) {
@@ -618,39 +617,45 @@ async function thread(req, res, next) {
           renderAsBlock: true
         };
       }
-    })
+    });
 
     var cfg = {};
     var converter = new QuillDeltaToHtmlConverter(postContent.ops, cfg);
 
-    converter.renderCustomWith(function(customOp, contextOp){
-      if (customOp.insert.type === 'hotlink') {
-          let val = customOp.insert.value
-          let contentType = 'Unkown'
+    converter.renderCustomWith(function(customOp, contextOp) {
+      if (customOp.insert.type === "hotlink") {
+        let val = customOp.insert.value;
+        let contentType = "Unkown";
 
-          if (val.url.includes(".png") ||
+        if (
+          val.url.includes(".png") ||
           val.url.includes(".jpg") ||
           val.url.includes(".jpeg") ||
-          val.url.includes(".gif")) {
-            contentType = 'image'
-          }
+          val.url.includes(".gif")
+        ) {
+          contentType = "image";
+        }
 
-          if (
-            val.url.includes("youtube.com") ||
-            val.url.includes("youtu.be")) {
-            contentType = 'youtube'
-          }
+        if (val.url.includes("youtube.com") || val.url.includes("youtu.be")) {
+          contentType = "youtube";
+        }
 
-          return `<hotlink url="${val.url}" contentType="${contentType}">${val.url}</hotlink>`;
+        return `<hotlink url="${val.url}" contentType="${contentType}">${
+          val.url
+        }</hotlink>`;
       } else if (customOp.insert.type === "postquote") {
         let val = customOp.insert.value;
-        return `<postquote forumid="${val.forumid}" threadid="${val.threadid}" postid="${val.postid}" username="${val.username}" userid="${val.userid}">${val.text}</postquote>`;
+        return `<postquote forumid="${val.forumid}" threadid="${
+          val.threadid
+        }" postid="${val.postid}" username="${val.username}" userid="${
+          val.userid
+        }">${val.text}</postquote>`;
       } else {
         return "<p>Unmanaged custom blot!</p>";
       }
-  });
+    });
 
-    let contentAsHtml = converter.convert(); 
+    let contentAsHtml = converter.convert();
 
     let postMeta = {};
 
@@ -672,7 +677,6 @@ async function thread(req, res, next) {
         backgroundImage: backgroundImage,
         userRank: postUserRank
       },
-      contentParsed: parsedContent,
       contentAsHtml: contentAsHtml,
       meta: postMeta,
       canreply: postCanReply,
