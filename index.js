@@ -631,7 +631,9 @@ async function thread(req, res, next) {
           val.url.includes(".png") ||
           val.url.includes(".jpg") ||
           val.url.includes(".jpeg") ||
-          val.url.includes(".gif")
+          val.url.includes(".gif") ||
+          val.url.includes("i.imgur.com") ||
+          val.url.includes("imgur.com")
         ) {
           contentType = "image";
         }
