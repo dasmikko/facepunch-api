@@ -374,17 +374,13 @@ async function thread(req, res, next) {
         }</hotlink>`;
       } else if (customOp.insert.type === "postquote") {
         let val = customOp.insert.value;
-        return `<postquote forumid="${val.forumid}" threadid="${
-          val.threadid
-        }" postid="${val.postid}" username="${val.username}" userid="${
-          val.userid
-        }">${val.text}</postquote>`;
+        return `<postquote forumid="${val.forumid}" threadid="${val.threadid}" postid="${val.postid}" username="${val.username}" userid="${val.userid}">${val.text}</postquote>`;
       } else if (customOp.insert.type === "mention") {
         let val = customOp.insert.value;
         return `<span>@${val.username}</span>`
       } else if (customOp.insert.type === "emote") {
         let val = customOp.insert.value;
-        return `<img src="${emotes[val.emote]['Url']}">`
+        return `<img src="${emotes[val]['Url']}">`
       } else {
         return "<p>Unmanaged custom blot!</p>";
       }
