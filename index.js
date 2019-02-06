@@ -5,6 +5,33 @@ const nodeEval = require("node-eval");
 var QuillDeltaToHtmlConverter = require("quill-delta-to-html")
   .QuillDeltaToHtmlConverter;
 
+const emotes =
+{
+  "1": { "EmoteId": 1, "Name": "Smile", "Url": "https://files.facepunch.com/garry/7c295d98-e496-4171-b9e9-8a1a5b9a752c.png", "Code": ":)", "Width": "17", "Height": "17" },
+  "2": { "EmoteId": 2, "Name": "Shock", "Url": "https://files.facepunch.com/garry/8f54ba59-eafb-43e9-8932-37da6c7ff7d6.gif", "Code": ":o", "Width": "17", "Height": "26" },
+  "3": { "EmoteId": 3, "Name": "Gross", "Url": "https://files.facepunch.com/garry/d94cc811-e04c-4eed-8f30-3ee367889c0b.png", "Code": ":gross:", "Width": "17", "Height": "17" },
+  "5": { "EmoteId": 5, "Name": "D-Smiley", "Url": "https://files.facepunch.com/garry/fd5e41fc-255f-46b8-a1e4-79c4f7bb4005.png", "Code": ":D", "Width": "17", "Height": "17" },
+  "6": { "EmoteId": 6, "Name": "Sad", "Url": "https://files.facepunch.com/garry/e4f979d2-7c3f-476c-a893-23d1375c94e5.png", "Code": ":(", "Width": "17", "Height": "17" },
+  "7": { "EmoteId": 7, "Name": "Cool", "Url": "https://files.facepunch.com/garry/23718818-dc19-4bb6-b499-2d8e43e255f7.gif", "Code": ":cool:", "Width": "17", "Height": "17" },
+  "8": { "EmoteId": 8, "Name": "Zipped", "Url": "https://files.facepunch.com/garry/566a8505-1567-442a-9643-711bd9d4a3da.png", "Code": ":x", "Width": "17", "Height": "17" },
+  "9": { "EmoteId": 9, "Name": "Cry", "Url": "https://files.facepunch.com/garry/a70a366b-2630-404b-a434-9f6e85001155.gif", "Code": ":'(", "Width": "17", "Height": "17" },
+  "10": { "EmoteId": 10, "Name": "Wow", "Url": "https://files.facepunch.com/garry/0bd96b11-05b1-4664-bef1-29597661b7e4.gif", "Code": ":wow:", "Width": "28", "Height": "17" },
+  "11": { "EmoteId": 11, "Name": "Excited", "Url": "https://files.facepunch.com/garry/471def29-4d4c-45c1-b75c-73d28a06af44.gif", "Code": ":excited:", "Width": "25", "Height": "25" },
+  "12": { "EmoteId": 12, "Name": "V", "Url": "https://files.facepunch.com/garry/a3ae7542-886f-4b69-966b-1ff07ab64461.png", "Code": ":v:", "Width": "17", "Height": "17" },
+  "14": { "EmoteId": 14, "Name": "Fap", "Url": "https://files.facepunch.com/garry/d2f3140d-5539-4596-838e-dfe2823ccc5d.gif", "Code": ":fap:", "Width": "22", "Height": "17" },
+  "15": { "EmoteId": 15, "Name": "Huh", "Url": "https://files.facepunch.com/garry/786c8d33-b7bd-4241-88ed-f9c030636513.gif", "Code": ":huh:", "Width": "23", "Height": "26" },
+  "16": { "EmoteId": 16, "Name": "Rolleyes", "Url": "https://files.facepunch.com/garry/57482028-86a6-46e3-aaf7-be5dd9804a37.gif", "Code": ":rolleyes:", "Width": "17", "Height": "17" },
+  "17": { "EmoteId": 17, "Name": "Words", "Url": "https://files.facepunch.com/garry/6b639ce9-2294-44d6-b470-edda6aedb679.gif", "Code": ":words:", "Width": "77", "Height": "17" },
+  "18": { "EmoteId": 18, "Name": "Quagmire", "Url": "https://files.facepunch.com/garry/58eb431e-73d1-467d-9f40-1c6edc1203ea.gif", "Code": ":quagmire:", "Width": "22", "Height": "24" },
+  "19": { "EmoteId": 19, "Name": "Dance", "Url": "https://files.facepunch.com/garry/11ade80f-d97b-4171-958c-33b94e9eb805.gif", "Code": ":dance:", "Width": "25", "Height": "19" },
+  "20": { "EmoteId": 20, "Name": "Postal's Ass", "Url": "https://files.facepunch.com/garry/9b68c6b4-4aad-4e3c-b957-e012f8171ca3.png", "Code": ":ass:", "Width": "25", "Height": "25" },
+  "21": { "EmoteId": 21, "Name": "Mushroom", "Url": "https://files.facepunch.com/garry/fdfaf3d5-94e3-4537-9183-f6333d7a71c6.gif", "Code": ":mushroom:", "Width": "16", "Height": "16" },
+  "22": { "EmoteId": 22, "Name": "Coin", "Url": "https://files.facepunch.com/garry/af4da1ad-2ba9-4768-b95c-e6afb0892a39.gif", "Code": ":coin:", "Width": "12", "Height": "16" },
+  "23": { "EmoteId": 23, "Name": "Wok", "Url": "https://files.facepunch.com/garry/cc9ee388-8bab-48f0-ab6e-f5c052456d4b.png", "Code": ":wok:", "Width": "52", "Height": "23" },
+  "24": { "EmoteId": 24, "Name": "Saddowns", "Url": "https://files.facepunch.com/garry/89a83759-9ca9-460c-941e-a87f52073011.png", "Code": ":saddowns:", "Width": "17", "Height": "17" },
+  "25": { "EmoteId": 25, "Name": "Garry Spin", "Url": "https://files.facepunch.com/garry/855cfed5-5e24-4f34-8289-f8b799cd93c2.gif", "Code": ":garry:", "Width": "20", "Height": "25" },
+}
+
 
 async function forums(req, res, next) {
   let content = await axios.get("https://forum.facepunch.com/f/");
@@ -352,6 +379,12 @@ async function thread(req, res, next) {
         }" postid="${val.postid}" username="${val.username}" userid="${
           val.userid
         }">${val.text}</postquote>`;
+      } else if (customOp.insert.type === "mention") {
+        let val = customOp.insert.value;
+        return `<span>@${val.username}</span>`
+      } else if (customOp.insert.type === "emote") {
+        let val = customOp.insert.value;
+        return `<img src="${emotes[val.emote]['Url']}">`
       } else {
         return "<p>Unmanaged custom blot!</p>";
       }
