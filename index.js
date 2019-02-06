@@ -377,7 +377,7 @@ async function thread(req, res, next) {
         return `<postquote forumid="${val.forumid}" threadid="${val.threadid}" postid="${val.postid}" username="${val.username}" userid="${val.userid}">${val.text}</postquote>`;
       } else if (customOp.insert.type === "mention") {
         let val = customOp.insert.value;
-        return `<span>@${val.username}</span>`
+        return `<strong><span>@${val.username}</span></strong>`
       } else if (customOp.insert.type === "emote") {
         let val = customOp.insert.value;
         return `<img src="${emotes[val]['Url']}">`
