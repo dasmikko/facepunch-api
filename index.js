@@ -164,9 +164,20 @@ async function forums(req, res, next) {
 }
 
 async function forum(req, res, next) {
-  let content = await axios.get(
-    "https://forum.facepunch.com/f/" + req.params.forumid
-  );
+  let currentPage = req.params.pagenumber ? parseInt(req.params.pagenumber) : 1
+
+  let content = null;
+
+  if (currentPage > 1) {
+    content = await axios.get(
+      "https://forum.facepunch.com/f/" + req.params.forumid + '/p/' + currentPage 
+    );
+  } else {
+    content = await axios.get(
+      "https://forum.facepunch.com/f/" + req.params.forumid
+    );
+  }
+  
 
   var $ = cheerio.load(content.data);
 
@@ -264,7 +275,18 @@ async function forum(req, res, next) {
       }
     });
   });
-  res.send(threads);
+  
+  
+  let totalThreads = parseInt($(".pagnation.above>pagnation").attr("total"))
+  let perPage = parseInt($(".pagnation.above>pagnation").attr("perpage"))
+  let totalPages = totalThreads / perPage
+
+  res.send({
+    totalThreads: totalThreads,
+    currentPage: currentPage,
+    totalPages: Math.ceil(totalPages),
+    threads: threads
+  });
   next();
 }
 
@@ -458,6 +480,9 @@ server.head("/f/", forums);
 // Single forum
 server.get("/:forumid", forum);
 server.head("/:forumid", forum);
+
+server.get("/:forumid/p/:pagenumber", forum);
+server.head("/:forumid/p/:pagenumber", forum);
 
 // Thread
 // https://forum.facepunch.com/general/bunmb/Inside-a-Flat-Earth-Conference/1/
