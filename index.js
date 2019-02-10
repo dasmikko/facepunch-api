@@ -34,7 +34,14 @@ const emotes =
 
 
 async function forums(req, res, next) {
-  let content = await axios.get("https://forum.facepunch.com/f/");
+  let content = await axios.get(
+    "https://forum.facepunch.com/f/",
+    {
+      headers: {
+          Cookie: req.header('cookie') ? req.header('cookie') : null
+      }
+    }
+  );
   var $ = cheerio.load(content.data);
   let categories = [];
 
@@ -170,11 +177,21 @@ async function forum(req, res, next) {
 
   if (currentPage > 1) {
     content = await axios.get(
-      "https://forum.facepunch.com/f/" + req.params.forumid + '/p/' + currentPage 
+      "https://forum.facepunch.com/f/" + req.params.forumid + '/p/' + currentPage,
+      {
+        headers: {
+            Cookie: req.header('cookie') ? req.header('cookie') : null
+        }
+      }
     );
   } else {
     content = await axios.get(
-      "https://forum.facepunch.com/f/" + req.params.forumid
+      "https://forum.facepunch.com/f/" + req.params.forumid,
+      {
+        headers: {
+            Cookie: req.header('cookie') ? req.header('cookie') : null
+        }
+      }
     );
   }
   
@@ -300,7 +317,12 @@ async function thread(req, res, next) {
       "/" +
       req.params.threadid2 +
       "/" +
-      req.params.pagenumber
+      req.params.pagenumber,
+      {
+        headers: {
+            Cookie: req.header('cookie') ? req.header('cookie') : null
+        }
+      }
   );
 
   var $ = cheerio.load(content.data);
