@@ -484,6 +484,33 @@ async function manifest(req, res, next) {
   next();
 }
 
+async function currentUserInfo(req, res, next) {
+  let content = await axios.get(
+    "https://forum.facepunch.com/general/bvacs/Newpunch-Droid/1/",
+      {
+        headers: {
+            Cookie: req.header('cookie') ? req.header('cookie') : null
+        }
+      }
+  );
+  var $ = cheerio.load(content.data);
+
+  let threadReplyObject = $('threadreply')
+
+  let username = threadReplyObject.attr('username')
+  let avatar = threadReplyObject.attr('avatar')
+  let level = parseInt(threadReplyObject.attr('levelclass').replace('level-', ''))
+  let backgroundImage = threadReplyObject.attr('userbackground')
+
+  res.send({
+    username,
+    avatar,
+    level,
+    backgroundImage
+  });
+  next();
+}
+
 var server = restify.createServer();
 
 // Manifest
@@ -505,6 +532,9 @@ server.head("/:forumid", forum);
 
 server.get("/:forumid/p/:pagenumber", forum);
 server.head("/:forumid/p/:pagenumber", forum);
+
+server.get("/currentUserInfo", currentUserInfo);
+server.head("/currentUserInfo", currentUserInfo);
 
 // Thread
 // https://forum.facepunch.com/general/bunmb/Inside-a-Flat-Earth-Conference/1/
