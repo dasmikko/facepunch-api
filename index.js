@@ -431,7 +431,7 @@ async function thread(req, res, next) {
     });
 
     let contentAsHtml = converter.convert();
-
+    let postid = parseInt($(post).attr("postid"));
     let postMeta = {};
 
     if ($(post).attr("meta")) {
@@ -452,6 +452,7 @@ async function thread(req, res, next) {
         backgroundImage: backgroundImage,
         userRank: postUserRank
       },
+      postid: postid,
       contentAsHtml: contentAsHtml,
       meta: postMeta,
       canreply: postCanReply,
