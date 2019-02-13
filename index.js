@@ -438,9 +438,9 @@ async function thread(req, res, next) {
     if ($(post).attr("meta")) {
       postMeta = JSON.parse($(post).attr("meta"));
     }
-
-    let postCanReply = $(post).attr("canreply") == "canreply";
-    let postCanVote = $(post).attr("canvote") == 'canvote';
+    
+    let postCanReply = ($(post).attr("canreply") == "canreply");
+    let postCanVote = ($(post).attr("canvote") == 'canvote');
 
     console.log("change")
 
@@ -458,7 +458,7 @@ async function thread(req, res, next) {
       postid: postid,
       contentAsHtml: contentAsHtml,
       meta: postMeta,
-      canreply: false,
+      canreply: postCanReply,
       canvote: postCanVote,
       isownpost: isOwnPost
     });
