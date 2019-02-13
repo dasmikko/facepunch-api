@@ -432,14 +432,15 @@ async function thread(req, res, next) {
 
     let contentAsHtml = converter.convert();
     let postid = parseInt($(post).attr("postid"));
+    let isOwnPost = $(post).attr("ownpost") == 'ownpost'
     let postMeta = {};
 
     if ($(post).attr("meta")) {
       postMeta = JSON.parse($(post).attr("meta"));
     }
 
-    let postCanReply = $(post).attr("canreply");
-    let postCanVote = $(post).attr("canvote");
+    let postCanReply = $(post).attr("canreply") == "canreply";
+    let postCanVote = $(post).attr("canvote") == 'canvote';
 
     // Push the post to the list
     posts.push({
@@ -456,7 +457,8 @@ async function thread(req, res, next) {
       contentAsHtml: contentAsHtml,
       meta: postMeta,
       canreply: postCanReply,
-      canvote: postCanVote
+      canvote: postCanVote,
+      isownpost: isOwnPost
     });
   });
 
