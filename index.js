@@ -442,6 +442,8 @@ async function thread(req, res, next) {
     let postCanReply = $(post).attr("canreply") == "canreply";
     let postCanVote = $(post).attr("canvote") == 'canvote';
 
+    console.log("change")
+
     // Push the post to the list
     posts.push({
       user: {
