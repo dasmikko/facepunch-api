@@ -458,7 +458,7 @@ async function thread(req, res, next) {
       postid: postid,
       contentAsHtml: contentAsHtml,
       meta: postMeta,
-      canreply: postCanReply,
+      canreply: false,
       canvote: postCanVote,
       isownpost: isOwnPost
     });
