@@ -442,8 +442,6 @@ async function thread(req, res, next) {
     let postCanReply = ($(post).attr("canreply") == "canreply");
     let postCanVote = ($(post).attr("canvote") == 'canvote');
 
-    console.log("change")
-
     // Push the post to the list
     posts.push({
       user: {
@@ -491,7 +489,7 @@ async function manifest(req, res, next) {
 
 async function currentUserInfo(req, res, next) {
   let content = await axios.get(
-    "https://forum.facepunch.com/general/bvacs/Newpunch-Droid/1/",
+    "https://forum.facepunch.com/general/btvcw/Facepunch-Community-Event-Hub/1/",
       {
         headers: {
             Cookie: req.header('cookie') ? req.header('cookie') : null
