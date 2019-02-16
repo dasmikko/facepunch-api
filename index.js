@@ -471,12 +471,17 @@ async function thread(req, res, next) {
     let postCanReply = ($(post).attr("canreply") == "canreply");
     let postCanVote = ($(post).attr("canvote") == 'canvote');
 
+    let posted = parseInt($(post).attr("posted"))
+    let edittime = parseInt($(post).attr("edittime"))
+
     // Push the post to the list
     posts.push({
       user: {
         country: postUserCountry,
         username: postUsername,
         userLevel: postUserLevel,
+        posted: posted,
+        edittime: edittime,
         url: postUserUrl,
         avatar: postUserAvatar ? postUserAvatar : null,
         backgroundImage: backgroundImage,
@@ -543,6 +548,94 @@ async function currentUserInfo(req, res, next) {
   next();
 }
 
+async function userProfile(req, res, next) {
+  let content = await axios.get(
+    "https://forum.facepunch.com/u/" +
+      req.params.id1 +
+      "/" +
+      req.params.id2 +
+      "/",
+      {
+        headers: {
+            Cookie: req.header('cookie') ? req.header('cookie') : null
+        }
+      }
+  );
+
+  var $ = cheerio.load(content.data);
+
+  let profileObj = $('userprofile')
+
+  let ops = JSON.parse(profileObj.attr('contents')).ops
+
+  console.log(ops)
+
+  var cfg = {};
+  var converter = new QuillDeltaToHtmlConverter(ops, cfg);
+
+  converter.renderCustomWith(function(customOp, contextOp) {
+    if (customOp.insert.type === "hotlink") {
+      let val = customOp.insert.value;
+      let contentType = "Unkown";
+
+      if (
+        val.url.includes(".png") ||
+        val.url.includes(".jpg") ||
+        val.url.includes(".jpeg") ||
+        val.url.includes(".gif") ||
+        val.url.includes("i.imgur.com") ||
+        val.url.includes("imgur.com")
+      ) {
+        contentType = "image";
+      }
+
+      if (val.url.includes("youtube.com") || val.url.includes("youtu.be")) {
+        contentType = "youtube";
+      }
+
+      if (val.url.includes('.mp4') || val.url.includes('.webm')) {
+        contentType = 'video'
+      }
+
+      return `<hotlink url="${val.url}" contentType="${contentType}">${
+        val.url
+      }</hotlink>`;
+    } else if (customOp.insert.type === "postquote") {
+      let val = customOp.insert.value;
+      return `<postquote forumid="${val.forumid}" threadid="${val.threadid}" postid="${val.postid}" username="${val.username}" userid="${val.userid}">${val.text}</postquote>`;
+    } else if (customOp.insert.type === "mention") {
+      let val = customOp.insert.value;
+      return `<strong><span>@${val.username}</span></strong>`
+    } else if (customOp.insert.type === "emote") {
+      let val = customOp.insert.value;
+      return `<img src="${emotes[val]['Url']}">`
+    } else {
+      return "<p>Unmanaged custom blot!</p>";
+    }
+  });
+
+  let contentAsHtml = converter.convert();
+
+  console.log(contentAsHtml)
+
+  let username = profileObj.attr('username')
+  let profileContent = contentAsHtml
+  let postCount = parseInt(profileObj.attr('postcount'))
+  let threadCount = parseInt(profileObj.attr('threadcount'))
+  let joinDate = parseInt(profileObj.attr('firstseen'))
+  let lastseen = parseInt(profileObj.attr('lastseen'))
+
+  res.send({
+    username: username,
+    content: profileContent,
+    postcount: postCount,
+    threadcount: threadCount,
+    firstseen: joinDate,
+    lastseen: lastseen
+  })
+  next()
+}
+
 var server = restify.createServer();
 
 // Manifest
@@ -574,6 +667,12 @@ server.get("/:forumid/:threadid1/:threadid2/:pagenumber", thread);
 server.head("/:forumid/:threadid1/:threadid2/:pagenumber", thread);
 server.get("/:forumid/:threadid1/:threadid2/:pagenumber/", thread);
 server.head("/:forumid/:threadid1/:threadid2/:pagenumber/", thread);
+
+// User profile
+server.get("/u/:id1/:id2", userProfile)
+server.head("/u/:id1/:id2", userProfile)
+server.get("/u/:id1/:id2/", userProfile)
+server.head("/u/:id1/:id2/", userProfile)
 
 var port = process.env.PORT || 8080;
 server.listen(port, function() {
