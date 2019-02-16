@@ -214,6 +214,11 @@ async function forum(req, res, next) {
 
     let isSticky = $(this).hasClass("is-sticky");
 
+    let isLocked = $(this).hasClass("is-closed");
+
+    let isSeen = $(this).hasClass("has-seen");
+
+
     let threadsubforum = $(this)
       .find(".threadsubforum")
       .attr("title"); //
@@ -236,6 +241,15 @@ async function forum(req, res, next) {
       .attr("href")
       .substr(3)
       .slice(0, -1);
+
+    let opRank = 'normal'
+
+    if ($(this).find('.username').hasClass('user-gold')) opRank = 'gold'
+    if ($(this).find('.username').hasClass('user-moderator')) opRank = 'moderator'
+    if ($(this).find('.username ').hasClass('user-admin')) opRank = 'admin'
+
+    let isOnline = false
+    if ($(this).find('.username ').hasClass('user-online')) isOnline = true
 
     $(this)
       .find(".threadage>div>.label")
@@ -273,19 +287,34 @@ async function forum(req, res, next) {
       .text()
       .trim();
 
+    let unreadPostsCount = parseInt($(this).find(".unreadposts").text());
+
+    if (isNaN(unreadPostsCount)) {
+      unreadPostsCount = 0
+    }
+
+    let lastUnreadUrl = $(this).find(".bglink").attr("href");
+
+
     threads.push({
       url: url,
+      lastUnreadUrl: lastUnreadUrl,
       title: title,
       icon: icon,
       isSticky: isSticky,
+      isLocked: isLocked,
+      isSeen: isSeen,
       threadsubforum: threadsubforum,
       threadagedays: threadage,
       viewedcount: viewedcount,
       postcount: postcount,
+      unreadPostsCount: unreadPostsCount,
       creator: {
         id: opId,
         username: opUsername,
-        url: opUrl
+        url: opUrl,
+        rank: opRank,
+        isOnline: isOnline
       },
       threadlastpost: {
         username: threadlastpostUsername
