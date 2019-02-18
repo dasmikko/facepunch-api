@@ -667,6 +667,10 @@ server.get("/:forumid/:threadid1/:threadid2/:pagenumber", thread);
 server.head("/:forumid/:threadid1/:threadid2/:pagenumber", thread);
 server.get("/:forumid/:threadid1/:threadid2/:pagenumber/", thread);
 server.head("/:forumid/:threadid1/:threadid2/:pagenumber/", thread);
+server.get("/:forumid/:threadid1/:pagenumber", thread);
+server.head("/:forumid/:threadid1/:pagenumber", thread);
+server.get("/:forumid/:threadid1/:pagenumber/", thread);
+server.head("/:forumid/:threadid1/:pagenumber/", thread);
 
 // User profile
 server.get("/u/:id1/:id2", userProfile)
