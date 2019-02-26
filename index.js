@@ -368,8 +368,8 @@ async function thread(req, res, next) {
 
   $(".container>.postlist>div").each((index, container) => {
     let post = $(container).find('postrender').first()
-
-    if (post == null) {
+    console.log(post)
+    if ($(container).find('postrender').length === 0) {
       posts.push({
         type: 'read',
       })
