@@ -369,6 +369,12 @@ async function thread(req, res, next) {
   $(".container>.postlist>div").each((index, container) => {
     let post = $(container).find('postrender').first()
 
+    if (post == null) {
+      posts.push({
+        type: 'read',
+      })
+    } else {
+
     // Get username
     let postUsername = $(post).attr("username");
     let postUserLevel = parseInt($(post).attr("level"));
@@ -476,11 +482,7 @@ async function thread(req, res, next) {
     let posted = parseInt($(post).attr("posted"))
     let edittime = parseInt($(post).attr("edittime"))
 
-    if (post == null) {
-      posts.push({
-        type: 'read',
-      })
-    } else {
+    
       // Push the post to the list
       posts.push({
         type: 'post',
