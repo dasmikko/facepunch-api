@@ -370,8 +370,11 @@ async function thread(req, res, next) {
     let post = $(container).find('postrender').first()
     
     if ($(container).find('postrender').length === 0) {
+      let timeAgo = $(container).find('timeago').attr('src')
+
       posts.push({
         type: 'read',
+        timeago: timeAgo
       })
     } else {
 
