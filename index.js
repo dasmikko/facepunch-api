@@ -374,7 +374,7 @@ async function thread(req, res, next) {
 
       posts.push({
         type: 'read',
-        timeago: timeAgo
+        timeago: parseInt(timeAgo)
       })
     } else {
 
